@@ -1,8 +1,8 @@
 import Helper
 import Board
 
-myBoard = Board.Board(8, 8)
-myBoard.print()
+my_board = Board.Board(8, 8)
+my_board.print()
 
 while True:
 	player_input = input("[select, move]: ")
@@ -16,4 +16,5 @@ while True:
 
 	print(command)
 	print(coordinate)
-	print(Helper.coordinate_to_position(coordinate))
+	coordinate_as_list = Helper.coordinate_to_position(coordinate)
+	my_board.get_valid_moves(my_board.get_piece(coordinate_as_list[0], coordinate_as_list[1]))

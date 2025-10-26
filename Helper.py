@@ -4,6 +4,7 @@ def input_is_valid(inp):
 	
 	if not len(inp.split()) == 2:
 		return False
+	
 	return True
 
 def command_is_valid(command):
