@@ -7,6 +7,9 @@ class Piece:
 	def get_direction(self):
 		return 1 if self.is_white else -1
 	
+	def get_moves(self):
+		return self.moves
+
 	def __str__(self):
 		if self.is_white:
 			return self.name
@@ -23,14 +26,23 @@ class PieceMove:
 class Pawn(Piece):
 	def __init__(self, is_white):
 		Piece.__init__(self, is_white, "p")
-		self.is_on_starting_row = True
+		self.can_double_move = True
 
 		#forward
-		self.moves.append(PieceMove(self.get_direction(), 0, 2, True, False))
+		self.moves.append(PieceMove(self.get_direction(), 0, 1, True, False))
 
 		#diagonal capture
 		self.moves.append(PieceMove(self.get_direction(), -1, 1, False, True))
 		self.moves.append(PieceMove(self.get_direction(), 1, 1, False, True))
+
+	def get_moves(self):
+		return self.moves + self.get_special_moves()
+	
+	def get_special_moves(self):
+		special_moves = []
+		if self.can_double_move:
+			special_moves.append(PieceMove(self.get_direction(), 0, 2, True, False))
+		return special_moves
 
 class Queen(Piece):
 	def __init__(self, is_white):

@@ -74,7 +74,7 @@ class Board:
 		if str(piece) == ".":
 			return valid_moves
 
-		for move in piece.moves:
+		for move in piece.get_moves():
 
 			position = self.get_position(piece)
 			position = get_position_in_direction(self, position.row, position.col, move.row_offset, move.col_offset)
@@ -104,14 +104,14 @@ class Board:
 		for r in range(self.rows):
 			row = []
 			for c in range(self.cols):
-				row.append(".")
+				row.append(str(self.grid[r][c]))
 			grid.append(row)
 
 		for move in self.get_valid_moves(piece):
-			move_symbol = "o" if move.captured_piece == None else "X"
+			move_symbol = "*" if move.captured_piece == None else "!"
 			grid[move.row][move.col] = move_symbol
 
-			print(" v"*8)
+		print(" v"*8)
 		for i in range(self.rows, 0, -1):
 			row = grid[i-1]
 			string = "-"
@@ -132,6 +132,9 @@ class Board:
 		piece_pos = self.get_position(piece)
 		self.grid[row][col] = piece
 		self.grid[piece_pos.row][piece_pos.col] = self.create_blank_piece()
+
+		if type(piece) == Pieces.Pawn:
+			piece.can_double_move = False
 		pass
 
 	def create_blank_piece(self):
