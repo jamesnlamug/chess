@@ -16,8 +16,30 @@ class Board:
 		for r in range(self.rows):
 			row = []
 			for c in range(self.cols):
-				if r == 1:
+				if r == 0:
+					if c == 4:
+						row.append(Pieces.King(True))
+					if c == 3:
+						row.append(Pieces.Queen(True))
+					elif c == 0 or c == 7:
+						row.append(Pieces.Rook(True))
+					elif c == 1 or c == 6:
+						row.append(Pieces.Knight(True))
+					elif c == 2 or c == 5:
+						row.append(Pieces.Bishop(True))
+				elif r == 1:
 					row.append(Pieces.Pawn(True))
+				elif r == 7:
+					if c == 4:
+						row.append(Pieces.King(False))
+					if c == 3:
+						row.append(Pieces.Queen(False))
+					elif c == 0 or c == 7:
+						row.append(Pieces.Rook(False))
+					elif c == 1 or c == 6:
+						row.append(Pieces.Knight(False))
+					elif c == 2 or c == 5:
+						row.append(Pieces.Bishop(False))
 				elif r == 6:
 					row.append(Pieces.Pawn(False))
 				else:
@@ -52,7 +74,7 @@ class Board:
 		if str(piece) == ".":
 			return valid_moves
 
-		for move in piece.directional_moves:
+		for move in piece.moves:
 
 			position = self.get_position(piece)
 			position = get_position_in_direction(self, position.row, position.col, move.row_offset, move.col_offset)
@@ -60,11 +82,20 @@ class Board:
 
 			while position.is_valid() and spaces_traveled < move.max_spaces: #in line of sight or capture
 				
-				captured_piece = None
+				captured_piece = self.get_piece(position.row, position.col)
+				if not captured_piece == None and captured_piece.is_white == piece.is_white:
+					break
+				elif not captured_piece == None and not move.is_capture and not captured_piece.is_white == piece.is_white:
+					break
+				elif (not move.is_move) and captured_piece == None:
+					break
+
 				valid_moves.append(BoardMove(piece, position.row, position.col, captured_piece))
 				spaces_traveled += 1
 				
 				position = get_position_in_direction(self, position.row, position.col, move.row_offset, move.col_offset)
+				if not captured_piece == None:
+					break
 		
 		return valid_moves
 
@@ -123,4 +154,4 @@ class BoardPosition:
 		return "BoardPosition " + letters[self.col] + str(self.row+1)
 	
 	def is_valid(self):
-		return not self.row == -1 and not self.col == -1
+		return not self.row < 0 and not self.row > 7 and not self.col < 0 and not self.col > 7

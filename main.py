@@ -37,6 +37,7 @@ while True:
 				continue
 
 			my_board.move(selected_piece, c_row, c_col)
+			selected_piece = None
 			my_board.print()
 
 		case "_":
