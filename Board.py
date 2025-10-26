@@ -1,4 +1,5 @@
 import Pieces
+import Helper
 
 def get_position_in_direction(board, row, col, row_offset, col_offset):
 	new_row = row+row_offset
@@ -143,14 +144,55 @@ class Board:
 				return True
 		return False
 
+	def find_king(self, is_white):
+		for row in self.grid:
+			for piece in row:
+				if type(piece) == Pieces.King and piece.is_white == is_white:
+					return piece
+		return None
+
+	def update_space_castling_requirement(self, is_white):
+		king_row = 0 if is_white else self.rows-1
+		king = self.find_king(is_white)
+
+		king.left_castle_open = self.get_piece(king_row, 1) == None and self.get_piece(king_row, 2) == None and self.get_piece(king_row, 3) == None
+		king.right_castle_open = self.get_piece(king_row, 5) == None and self.get_piece(king_row, 6) == None
+
+	def update_rook_castling_requirement(self, rook, col):
+		king = self.find_king(rook.is_white)
+
+		if col == 0:
+			king.left_rook_moved = True
+		elif col == self.cols-1:
+			king.right_rook_moved = True
+
 	def move(self, piece, row, col):
 		piece_pos = self.get_position(piece)
+		if type(piece) == Pieces.King and not piece.has_moved:
+			piece.has_moved = True
+			if col == 2:
+				self.move(self.get_piece(0, 0), row, col+1)
+			elif col == 6:
+				self.move(self.get_piece(0, self.rows-1), row, col-1)
+
+		if type(piece) == Pieces.Rook:
+			self.update_rook_castling_requirement(piece, piece_pos.col)
+
 		self.grid[row][col] = piece
 		self.grid[piece_pos.row][piece_pos.col] = self.create_blank_piece()
 
+		self.update_space_castling_requirement(piece.is_white)
+
 		if type(piece) == Pieces.Pawn:
 			piece.can_double_move = False
-		pass
+
+	def play_human_readable_move(self, move):
+		start_position = Helper.coordinate_to_position(move.coordinate1)
+		piece = self.get_piece(start_position[0], start_position[1])
+
+		move_position = Helper.coordinate_to_position(move.coordinate2)
+
+		self.move(piece, move_position[0], move_position[1])
 
 	def create_blank_piece(self):
 		return Pieces.Piece(False, ".")
@@ -164,6 +206,11 @@ class BoardMove:
 
 	def __str__(self):
 		return "BoardMove " + str(self.piece) + str(self.row) + ", " + str(self.col)
+
+class HumanReadableMove:
+	def __init__(self, coordinate1, coordinate2):
+		self.coordinate1 = coordinate1
+		self.coordinate2 = coordinate2
 
 letters =["a", "b", "c", "d", "e", "f", "g", "h"]
 class BoardPosition:

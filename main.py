@@ -1,6 +1,7 @@
 import random
 import Helper
 import Board
+import testcases
 
 def get_player_piece(board, is_white):
 	player_input = input("select a piece(a1-h8): ")
@@ -52,8 +53,12 @@ def make_random_ai_move(board, is_white):
 	move = valid_moves[random.randint(0, len(valid_moves)-1)]
 	board.move(move.piece, move.row, move.col)
 
-	print("ai played " + str(move.piece) + " to " + Helper.position_to_coordinate(move.row, move.col))
+	print("ai played " + move.piece.get_full_name() + " to " + Helper.position_to_coordinate(move.row, move.col))
 	pass
+
+def run_moves(moves):
+	for move in moves:
+		my_board.play_human_readable_move(move)
 
 #main
 my_board = Board.Board(8, 8)
@@ -61,6 +66,9 @@ my_board.print()
 
 game_running = True
 player_is_white = True
+
+test_case = testcases.white_castling_right
+run_moves(test_case)
 
 Helper.clear()
 while game_running:
@@ -72,10 +80,10 @@ while game_running:
 		player_piece = get_player_piece(my_board, player_is_white)
 		
 		if not player_piece == None:
-			Helper.clear()
+			#Helper.clear()
 			my_board.print_valid_moves(player_piece)
 
 		player_moved = make_player_move(player_piece, my_board)
 	
-	Helper.clear()
+	#Helper.clear()
 	make_random_ai_move(my_board, not player_is_white)
