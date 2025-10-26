@@ -1,3 +1,6 @@
+import os
+clear = lambda: os.system("cls")
+
 def input_is_valid(inp):
 	if not type(inp) == str:
 		return False
@@ -41,3 +44,6 @@ def coordinate_to_position(valid_coordinate):
 	row = int(valid_coordinate[1:2]) -1
 	col = letter_columns.index(valid_coordinate[0:1])
 	return [row, col]
+
+def position_to_coordinate(row, col):
+	return letter_columns[col] + str(row+1)

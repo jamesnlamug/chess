@@ -68,6 +68,18 @@ class Board:
 				if self.grid[r][c] == piece:
 					return BoardPosition(r, c)
 		return BoardPosition(-1, -1)
+	
+	def get_all_pieces_of_side(self, is_white):
+		pieces = []
+		for row in self.grid:
+			for piece in row:
+				if str(piece) == ".":
+					continue
+				if not piece.is_white == is_white:
+					continue
+				pieces.append(piece)
+		
+		return pieces
 
 	def get_valid_moves(self, piece):
 		valid_moves = []
@@ -100,6 +112,9 @@ class Board:
 		return valid_moves
 
 	def print_valid_moves(self, piece):
+		if piece == None or str(piece) == ".":
+			return
+		
 		grid = []
 		for r in range(self.rows):
 			row = []
@@ -146,6 +161,9 @@ class BoardMove:
 		self.row = row
 		self.col = col
 		self.captured_piece = captured_piece
+
+	def __str__(self):
+		return "BoardMove " + str(self.piece) + str(self.row) + ", " + str(self.col)
 
 letters =["a", "b", "c", "d", "e", "f", "g", "h"]
 class BoardPosition:

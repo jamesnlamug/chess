@@ -1,44 +1,81 @@
+import random
 import Helper
 import Board
 
+def get_player_piece(board, is_white):
+	player_input = input("select a piece(a1-h8): ")
+	if not Helper.coordinate_is_valid(player_input):
+		print("Cannot select piece - Invalid coordinate!")
+		return None
+	
+	c_list = Helper.coordinate_to_position(player_input)
+	c_row = c_list[0]
+	c_col = c_list[1]
+	
+	if board.get_piece(c_row, c_col) == None:
+		print("Cannot select piece - cannot select empty square!")
+		return None
+
+	if not board.get_piece(c_row, c_col).is_white == is_white:
+		print("Cannot select piece - cannot select enemy pieces!")
+		return None
+
+	return board.get_piece(c_row, c_col)
+
+def make_player_move(piece, board):
+	if piece == None:
+		print("Cannot move - No piece selected!")
+		return False
+	
+	player_input = input("select a location to move to(a1-h8): ")
+	if not Helper.coordinate_is_valid(player_input):
+		print("Cannot move - Invalid coordinate!")
+		return False
+	
+	c_list = Helper.coordinate_to_position(player_input)
+	c_row = c_list[0]
+	c_col = c_list[1]
+
+	if not board.is_valid_move(piece, c_row, c_col):
+		print("Cannot move - Invalid move!")
+		return False
+
+	board.move(piece, c_row, c_col)
+	return True
+
+def make_random_ai_move(board, is_white):
+	ai_pieces = board.get_all_pieces_of_side(is_white)
+	valid_moves = []
+	for piece in ai_pieces:
+		valid_moves += board.get_valid_moves(piece)
+
+	move = valid_moves[random.randint(0, len(valid_moves)-1)]
+	board.move(move.piece, move.row, move.col)
+
+	print("ai played " + str(move.piece) + " to " + Helper.position_to_coordinate(move.row, move.col))
+	pass
+
+#main
 my_board = Board.Board(8, 8)
 my_board.print()
 
-selected_piece = None
-while True:
-	player_input = input("[select, move]: ")
-	if not Helper.input_is_valid(player_input):
-		continue
+game_running = True
+player_is_white = True
 
-	command = player_input.split()[0]
-	coordinate = player_input.split()[1]
-	if not Helper.command_is_valid(command) or not Helper.coordinate_is_valid(coordinate):
-		continue
+Helper.clear()
+while game_running:
 
-	c_list = Helper.coordinate_to_position(coordinate)
-	c_row = c_list[0]
-	c_col = c_list[1]
-	print(command + "-" + str(c_list))
+	player_piece = None
+	player_moved = False
+	while not player_moved:
+		my_board.print()
+		player_piece = get_player_piece(my_board, player_is_white)
+		
+		if not player_piece == None:
+			Helper.clear()
+			my_board.print_valid_moves(player_piece)
+
+		player_moved = make_player_move(player_piece, my_board)
 	
-	match command:
-		case "select":
-			selected_piece = my_board.get_piece(c_row, c_col)
-			if selected_piece == None:
-				print("Cannot select: No piece at that position!")
-				continue
-			my_board.print_valid_moves(selected_piece)
-
-		case "move":
-			if selected_piece == None:
-				print("Cannot move: No piece selected!")
-				continue
-			if not my_board.is_valid_move(selected_piece, c_row, c_col):
-				print("Cannot move: invalid move for this piece!")
-				continue
-
-			my_board.move(selected_piece, c_row, c_col)
-			selected_piece = None
-			my_board.print()
-
-		case "_":
-			continue
+	Helper.clear()
+	make_random_ai_move(my_board, not player_is_white)
