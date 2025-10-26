@@ -31,7 +31,8 @@ class OffsetMove:
 class Pawn(Piece):
 	def __init__(self, is_white):
 		Piece.__init__(self, is_white, "p")
-		self.directional_moves.append(DirectionalMove(self.get_direction(), 0, 4, True, False))
+		self.is_on_starting_row = True
+		self.directional_moves.append(DirectionalMove(self.get_direction(), 0, 2, True, False))
 
 		self.offset_moves.append(OffsetMove(self.get_direction(), -1, False, True))
 		self.offset_moves.append(OffsetMove(self.get_direction(), 1, False, True))

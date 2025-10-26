@@ -21,7 +21,7 @@ class Board:
 				elif r == 6:
 					row.append(Pieces.Pawn(False))
 				else:
-					row.append(Pieces.Piece(False, "."))
+					row.append(self.create_blank_piece())
 			self.grid.append(row)
 	
 	def print(self):
@@ -36,6 +36,8 @@ class Board:
 		print(" ^"*8)
 
 	def get_piece(self, row, col):
+		if str(self.grid[row][col]) == ".":
+			return None
 		return self.grid[row][col]
 
 	def get_position(self, piece):
@@ -63,10 +65,10 @@ class Board:
 				spaces_traveled += 1
 				
 				position = get_position_in_direction(self, position.row, position.col, move.row_offset, move.col_offset)
+		
+		return valid_moves
 
-			self.print_board_moves(valid_moves)
-
-	def print_board_moves(self, board_moves):
+	def print_valid_moves(self, piece):
 		grid = []
 		for r in range(self.rows):
 			row = []
@@ -74,7 +76,7 @@ class Board:
 				row.append(".")
 			grid.append(row)
 
-		for move in board_moves:
+		for move in self.get_valid_moves(piece):
 			move_symbol = "o" if move.captured_piece == None else "X"
 			grid[move.row][move.col] = move_symbol
 
@@ -87,6 +89,22 @@ class Board:
 			print(string)
 
 		print(" ^"*8)
+
+	def is_valid_move(self, piece, row, col):
+		valid_moves = self.get_valid_moves(piece)
+		for move in valid_moves:
+			if move.row == row and move.col == col:
+				return True
+		return False
+
+	def move(self, piece, row, col):
+		piece_pos = self.get_position(piece)
+		self.grid[row][col] = piece
+		self.grid[piece_pos.row][piece_pos.col] = self.create_blank_piece()
+		pass
+
+	def create_blank_piece(self):
+		return Pieces.Piece(False, ".")
 	
 class BoardMove:
 	def __init__(self, piece, row, col, captured_piece=None):
