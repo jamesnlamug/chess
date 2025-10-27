@@ -150,6 +150,22 @@ class Board:
 				if type(piece) == Pieces.King and piece.is_white == is_white:
 					return piece
 		return None
+	
+	def test_for_check(self, is_white):
+		enemy_pieces = self.get_all_pieces_of_side(not is_white)
+		for piece in enemy_pieces:
+			if self.piece_is_checking_king(piece):
+				return True
+		
+		return False
+	
+	def piece_is_checking_king(self, piece):
+		king = self.find_king(not piece.is_white)
+		moves = self.get_valid_moves(piece)
+		for move in moves:
+			if move.captured_piece == king:
+				return True
+		return False
 
 	def update_space_castling_requirement(self, is_white):
 		king_row = 0 if is_white else self.rows-1

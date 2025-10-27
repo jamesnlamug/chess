@@ -62,15 +62,15 @@ def run_moves(moves):
 
 #main
 my_board = Board.Board(8, 8)
-my_board.print()
 
 game_running = True
 player_is_white = True
 
-test_case = testcases.white_castling_right
+test_case = testcases.black_in_check
 run_moves(test_case)
 
-Helper.clear()
+print("black in check?")
+print(my_board.test_for_check(not player_is_white))
 while game_running:
 
 	player_piece = None
