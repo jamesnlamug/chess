@@ -5,7 +5,7 @@ def get_position_in_direction(board, row, col, row_offset, col_offset):
 	new_row = row+row_offset
 	new_col = col+col_offset
 	if row < 0 or row > board.rows-1 or col < 0 or col > board.cols-1:
-		return BoardPosition(-1, -1)
+		return None
 	return BoardPosition(new_row, new_col)
 
 class Board:
@@ -68,21 +68,42 @@ class Board:
 			for c in range(self.cols):
 				if self.grid[r][c] == piece:
 					return BoardPosition(r, c)
-		return BoardPosition(-1, -1)
+		return None
 	
 	def get_all_pieces_of_side(self, is_white):
 		pieces = []
 		for row in self.grid:
 			for piece in row:
-				if str(piece) == ".":
+				if piece == None or str(piece) == ".":
 					continue
 				if not piece.is_white == is_white:
 					continue
 				pieces.append(piece)
 		
 		return pieces
+	
+	def move_is_legal(self, move):
 
-	def get_valid_moves(self, piece):
+		piece_pos = self.get_position(move.piece)
+		if piece_pos == None:
+			print("Invalid position.")
+			return False
+		
+		if piece_pos.row == move.row and piece_pos.col == move.col:
+			print("Piece is moving to same position.")
+			return False
+
+		captured_piece = self.move(move.piece, move.row, move.col, True)
+
+		if self.test_for_check(move.piece.is_white):
+			
+			self.undo_move(move.piece, piece_pos.row, piece_pos.col, move.row, move.col, captured_piece)
+			return False
+
+		self.undo_move(move.piece, piece_pos.row, piece_pos.col, move.row, move.col, captured_piece)
+		return True
+
+	def get_valid_moves(self, piece, testing_for_check = False):
 		valid_moves = []
 		if str(piece) == ".":
 			return valid_moves
@@ -90,7 +111,13 @@ class Board:
 		for move in piece.get_moves():
 
 			position = self.get_position(piece)
+			if position == None:
+				break
+			
 			position = get_position_in_direction(self, position.row, position.col, move.row_offset, move.col_offset)
+			if position == None:
+				break
+
 			spaces_traveled = 0
 
 			while position.is_valid() and spaces_traveled < move.max_spaces: #in line of sight or capture
@@ -103,10 +130,15 @@ class Board:
 				elif (not move.is_move) and captured_piece == None:
 					break
 
-				valid_moves.append(BoardMove(piece, position.row, position.col, captured_piece))
-				spaces_traveled += 1
-				
+				board_move = BoardMove(piece, position.row, position.col, captured_piece)
+				if not testing_for_check and not self.move_is_legal(board_move):
+					position = get_position_in_direction(self, position.row, position.col, move.row_offset, move.col_offset)
+					spaces_traveled += 1
+					continue
+
+				valid_moves.append(board_move)
 				position = get_position_in_direction(self, position.row, position.col, move.row_offset, move.col_offset)
+				spaces_traveled += 1
 				if not captured_piece == None:
 					break
 		
@@ -137,11 +169,28 @@ class Board:
 
 		print(" ^"*8)
 
+	def get_all_valid_moves_of_side(self, is_white):
+		pieces = self.get_all_pieces_of_side(is_white)
+		valid_moves = []
+		for piece in pieces:
+			valid_moves += self.get_valid_moves(piece)
+		return valid_moves
+
 	def is_valid_move(self, piece, row, col):
+		piece_pos = self.get_position(piece)
+		if piece_pos == None:
+			print("Invalid position.")
+			return False
+		
+		if piece_pos.row == row and piece_pos.col == col:
+			print("Piece is moving to same position.")
+			return False
+
 		valid_moves = self.get_valid_moves(piece)
 		for move in valid_moves:
 			if move.row == row and move.col == col:
 				return True
+		
 		return False
 
 	def find_king(self, is_white):
@@ -149,6 +198,7 @@ class Board:
 			for piece in row:
 				if type(piece) == Pieces.King and piece.is_white == is_white:
 					return piece
+		print("Could not find king. ")
 		return None
 	
 	def test_for_check(self, is_white):
@@ -160,12 +210,19 @@ class Board:
 		return False
 	
 	def piece_is_checking_king(self, piece):
+		if type(piece) == Pieces.King:
+			return False
+		
 		king = self.find_king(not piece.is_white)
-		moves = self.get_valid_moves(piece)
+		moves = self.get_valid_moves(piece, True)
 		for move in moves:
 			if move.captured_piece == king:
 				return True
 		return False
+	
+	def update_pawn_double_move_requirement(self, pawn, row):
+		starting_row = 1 if pawn.is_white else self.rows-2
+		pawn.can_double_move = row == starting_row
 
 	def update_space_castling_requirement(self, is_white):
 		king_row = 0 if is_white else self.rows-1
@@ -182,25 +239,70 @@ class Board:
 		elif col == self.cols-1:
 			king.right_rook_moved = True
 
-	def move(self, piece, row, col):
+	def move(self, piece, row, col, testing_for_check=False):
+		#print("move: " + str(piece) + " to " + Helper.position_to_coordinate(row, col))
+
 		piece_pos = self.get_position(piece)
+		
 		if type(piece) == Pieces.King and not piece.has_moved:
 			piece.has_moved = True
-			if col == 2:
-				self.move(self.get_piece(0, 0), row, col+1)
-			elif col == 6:
-				self.move(self.get_piece(0, self.rows-1), row, col-1)
+			left_rook = self.get_piece(row, 0)
+			right_rook = self.get_piece(row, self.rows-1)
 
-		if type(piece) == Pieces.Rook:
+			if col == 2:
+				self.move(left_rook, row, col+1)
+			elif col == 6:
+				self.move(right_rook, row, col-1)
+
+		if type(piece) == Pieces.Rook and not testing_for_check:
 			self.update_rook_castling_requirement(piece, piece_pos.col)
 
+		captured_piece = self.grid[row][col]
 		self.grid[row][col] = piece
 		self.grid[piece_pos.row][piece_pos.col] = self.create_blank_piece()
 
 		self.update_space_castling_requirement(piece.is_white)
 
 		if type(piece) == Pieces.Pawn:
-			piece.can_double_move = False
+			self.update_pawn_double_move_requirement(piece, row)
+		
+		return captured_piece
+	
+	def undo_move(self, piece, row_start, col_start, row_end, col_end, captured_piece):
+		
+		was_castled = type(piece) == Pieces.King and abs(col_start - col_end) > 1
+		if was_castled:
+			#reset king castle to normal - DO NOT PASS THROUGH MOVE FUNCTION so requirements are not set
+			piece.has_moved = False
+			'''
+			if col_end == 2:
+				print("undo left rook swap")
+				left_rook = self.get_piece(row_end, col_end+1)
+				print(str(left_rook))
+				self.grid[row_end][col_end+1] = self.create_blank_piece()
+				self.grid[row_end][0] = left_rook
+
+				piece.left_castle_open = True
+				piece.left_rook_moved = False
+
+			elif col_end == 6:
+				print("undo right rook swap")
+
+				right_rook = self.get_piece(row_end, col_end-1)
+				self.grid[row_end][col_end-1] = self.create_blank_piece()
+				self.grid[row_end][0] = right_rook
+
+				piece.right_castle_open = True
+				piece.right_rook_moved = False
+			'''
+
+		self.grid[row_start][col_start] = piece
+		self.grid[row_end][col_end] = captured_piece
+
+		self.update_space_castling_requirement(piece.is_white)
+
+		if type(piece) == Pieces.Pawn:
+			self.update_pawn_double_move_requirement(piece, row_start)
 
 	def play_human_readable_move(self, move):
 		start_position = Helper.coordinate_to_position(move.coordinate1)

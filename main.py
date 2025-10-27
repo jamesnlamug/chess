@@ -37,6 +37,8 @@ def make_player_move(piece, board):
 	c_row = c_list[0]
 	c_col = c_list[1]
 
+	board.print()
+
 	if not board.is_valid_move(piece, c_row, c_col):
 		print("Cannot move - Invalid move!")
 		return False
@@ -45,10 +47,7 @@ def make_player_move(piece, board):
 	return True
 
 def make_random_ai_move(board, is_white):
-	ai_pieces = board.get_all_pieces_of_side(is_white)
-	valid_moves = []
-	for piece in ai_pieces:
-		valid_moves += board.get_valid_moves(piece)
+	valid_moves = board.get_all_valid_moves_of_side(is_white)
 
 	move = valid_moves[random.randint(0, len(valid_moves)-1)]
 	board.move(move.piece, move.row, move.col)
@@ -64,13 +63,11 @@ def run_moves(moves):
 my_board = Board.Board(8, 8)
 
 game_running = True
-player_is_white = True
+player_is_white = False
 
-test_case = testcases.black_in_check
+test_case = testcases.black_castling_left
 run_moves(test_case)
 
-print("black in check?")
-print(my_board.test_for_check(not player_is_white))
 while game_running:
 
 	player_piece = None

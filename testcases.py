@@ -30,3 +30,7 @@ black_in_check = []
 black_in_check.append(Board.HumanReadableMove("e2", "e3"))
 black_in_check.append(Board.HumanReadableMove("d1", "h5"))
 black_in_check.append(Board.HumanReadableMove("f7", "f6"))
+
+white_in_check_capture = []
+white_in_check_capture.append(Board.HumanReadableMove("e2", "e4"))
+white_in_check_capture.append(Board.HumanReadableMove("d8", "e3"))
