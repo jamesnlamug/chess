@@ -59,15 +59,12 @@ class Board:
 			self.grid.append(row)
 	
 	def print(self):
-		print(" v"*8)
 		for i in range(self.rows, 0, -1):
 			row = self.grid[i-1]
 			string = "-"
 			connector = " "
 			string = string + connector.join(str(piece) for piece in row) + "-"
 			print(string)
-
-		print(" ^"*8)
 
 	def update_board_state(self):
 		
@@ -108,7 +105,7 @@ class Board:
 				return False
 
 	def get_piece(self, row, col):
-		if str(self.grid[row][col]) == ".":
+		if str(self.grid[row][col]) == str(self.create_blank_piece()):
 			return None
 		return self.grid[row][col]
 
@@ -123,7 +120,7 @@ class Board:
 		pieces = []
 		for row in self.grid:
 			for piece in row:
-				if piece == None or str(piece) == ".":
+				if piece == None or str(piece) == str(self.create_blank_piece()):
 					continue
 				if not piece.is_white == is_white:
 					continue
@@ -154,7 +151,7 @@ class Board:
 
 	def get_valid_moves(self, piece, testing_for_check = False):
 		valid_moves = []
-		if str(piece) == ".":
+		if str(piece) == str(self.create_blank_piece()):
 			return valid_moves
 
 		for move in piece.get_moves():
@@ -194,7 +191,7 @@ class Board:
 		return valid_moves
 
 	def print_valid_moves(self, piece):
-		if piece == None or str(piece) == ".":
+		if piece == None or str(piece) == str(self.create_blank_piece()):
 			return
 		
 		grid = []
@@ -363,7 +360,7 @@ class Board:
 		self.move(piece, move_position[0], move_position[1])
 
 	def create_blank_piece(self):
-		return Pieces.Piece(False, ".")
+		return Pieces.Piece(False, " ")
 	
 class BoardMove:
 	def __init__(self, piece, row, col, captured_piece=None):
