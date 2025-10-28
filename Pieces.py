@@ -1,3 +1,5 @@
+from colorama import Fore
+
 class Piece:
 	def __init__(self, is_white, name):
 		self.is_white = is_white
@@ -12,8 +14,8 @@ class Piece:
 
 	def __str__(self):
 		if self.is_white:
-			return self.name
-		return self.name.upper()
+			return Fore.WHITE + self.name
+		return Fore.MAGENTA + self.name
 	
 	def get_full_name(self):
 		match self.name:

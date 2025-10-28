@@ -1,6 +1,7 @@
+from colorama import Fore, Back
+from enum import Enum
 import Pieces
 import Helper
-from enum import Enum
 
 def get_position_in_direction(board, row, col, row_offset, col_offset):
 	new_row = row+row_offset
@@ -58,12 +59,16 @@ class Board:
 					row.append(self.create_blank_piece())
 			self.grid.append(row)
 	
+	def get_tile_color(self, r, c):
+		tile_num = r*9 + c
+		return Back.BLACK if tile_num % 2 == 0 else Back.WHITE
+
 	def print(self):
-		for i in range(self.rows, 0, -1):
-			row = self.grid[i-1]
-			string = "-"
-			connector = " "
-			string = string + connector.join(str(piece) for piece in row) + "-"
+		for r in range(self.rows-1, -1, -1):
+			string = Fore.RESET + Back.RESET
+			for c in range(self.cols):
+				string += " " + self.get_tile_color(r, c) + str(self.get_piece(r, c))
+			string += Fore.RESET + " " + Back.RESET
 			print(string)
 
 	def update_board_state(self):
@@ -105,8 +110,6 @@ class Board:
 				return False
 
 	def get_piece(self, row, col):
-		if str(self.grid[row][col]) == str(self.create_blank_piece()):
-			return None
 		return self.grid[row][col]
 
 	def get_position(self, piece):
@@ -120,7 +123,7 @@ class Board:
 		pieces = []
 		for row in self.grid:
 			for piece in row:
-				if piece == None or str(piece) == str(self.create_blank_piece()):
+				if str(piece) == str(self.create_blank_piece()):
 					continue
 				if not piece.is_white == is_white:
 					continue
@@ -169,11 +172,12 @@ class Board:
 			while position.is_valid() and spaces_traveled < move.max_spaces: #in line of sight or capture
 				
 				captured_piece = self.get_piece(position.row, position.col)
-				if not captured_piece == None and captured_piece.is_white == piece.is_white:
+				piece_is_none = str(captured_piece) == str(self.create_blank_piece())
+				if not piece_is_none and captured_piece.is_white == piece.is_white:
 					break
-				elif not captured_piece == None and not move.is_capture and not captured_piece.is_white == piece.is_white:
+				elif not piece_is_none and not move.is_capture and not captured_piece.is_white == piece.is_white:
 					break
-				elif (not move.is_move) and captured_piece == None:
+				elif (not move.is_move) and piece_is_none:
 					break
 
 				board_move = BoardMove(piece, position.row, position.col, captured_piece)
@@ -185,13 +189,13 @@ class Board:
 				valid_moves.append(board_move)
 				position = get_position_in_direction(self, position.row, position.col, move.row_offset, move.col_offset)
 				spaces_traveled += 1
-				if not captured_piece == None:
+				if not piece_is_none:
 					break
 		
 		return valid_moves
 
 	def print_valid_moves(self, piece):
-		if piece == None or str(piece) == str(self.create_blank_piece()):
+		if str(piece) == str(self.create_blank_piece()):
 			return
 		
 		grid = []
@@ -202,18 +206,15 @@ class Board:
 			grid.append(row)
 
 		for move in self.get_valid_moves(piece):
-			move_symbol = "*" if move.captured_piece == None else "!"
+			move_symbol = Fore.RED + "*" if str(move.captured_piece) == str(self.create_blank_piece()) else "!"
 			grid[move.row][move.col] = move_symbol
 
-		print(" v"*8)
-		for i in range(self.rows, 0, -1):
-			row = grid[i-1]
-			string = "-"
-			connector = " "
-			string = string + connector.join(row) + "-"
+		for r in range(self.rows-1, -1, -1):
+			string = Fore.RESET + Back.RESET
+			for c in range(self.cols):
+				string += " " + self.get_tile_color(r, c) + str(grid[r][c])
+			string += Fore.RESET + " " + Back.RESET
 			print(string)
-
-		print(" ^"*8)
 
 	def get_all_valid_moves_of_side(self, is_white):
 		pieces = self.get_all_pieces_of_side(is_white)

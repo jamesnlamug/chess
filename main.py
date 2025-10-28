@@ -87,7 +87,7 @@ player_is_white = True
 
 test_case = testcases.white_can_scholars_mate
 #run_moves(test_case)
-'''
+
 while my_board.is_playable():
 
 	player_piece = None
@@ -108,6 +108,6 @@ while my_board.is_playable():
 
 print("game over.")
 print(my_board.board_state)
-'''
 
-run_auto(0.1)
+
+#run_auto(0.1)
