@@ -1,3 +1,4 @@
+import time
 import random
 import Helper
 import Board
@@ -66,8 +67,9 @@ game_running = True
 player_is_white = False
 
 test_case = testcases.black_castling_left
-run_moves(test_case)
+#run_moves(test_case)
 
+'''
 while game_running:
 
 	player_piece = None
@@ -84,3 +86,16 @@ while game_running:
 	
 	#Helper.clear()
 	make_random_ai_move(my_board, not player_is_white)
+'''
+
+auto_time = 0.01
+while True:
+	time.sleep(auto_time)
+	make_random_ai_move(my_board, True)
+	#Helper.clear()
+	my_board.print()
+
+	time.sleep(auto_time)
+	make_random_ai_move(my_board, False)
+	#Helper.clear()
+	my_board.print()

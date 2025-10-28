@@ -210,8 +210,6 @@ class Board:
 		return False
 	
 	def piece_is_checking_king(self, piece):
-		if type(piece) == Pieces.King:
-			return False
 		
 		king = self.find_king(not piece.is_white)
 		moves = self.get_valid_moves(piece, True)
