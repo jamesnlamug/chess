@@ -1,5 +1,6 @@
 import Pieces
 import Helper
+from enum import Enum
 
 def get_position_in_direction(board, row, col, row_offset, col_offset):
 	new_row = row+row_offset
@@ -8,11 +9,21 @@ def get_position_in_direction(board, row, col, row_offset, col_offset):
 		return None
 	return BoardPosition(new_row, new_col)
 
+class BoardState(Enum):
+	NO_CHECK = 0
+	CHECK_WHITE = 1
+	CHECK_BLACK = 2
+	CHECKMATE_WHITE = 3
+	CHECKMATE_BLACK = 4
+	STALEMATE_WHITE = 5
+	STALEMATE_BLACK = 6
+
 class Board:
 	def __init__(self, rows, cols):
 		self.rows = rows
 		self.cols = cols
 
+		self.board_state = BoardState.NO_CHECK
 		self.grid = []
 		for r in range(self.rows):
 			row = []
@@ -57,6 +68,44 @@ class Board:
 			print(string)
 
 		print(" ^"*8)
+
+	def update_board_state(self):
+		
+		white_in_check = self.test_for_check(True)
+		black_in_check = self.test_for_check(False)
+		white_has_moves = len(self.get_all_valid_moves_of_side(True)) > 0
+		black_has_moves = len(self.get_all_valid_moves_of_side(False)) > 0
+		
+		if white_in_check and white_has_moves:
+			self.board_state = BoardState.CHECK_WHITE
+
+		elif white_in_check and not white_has_moves:
+			self.board_state = BoardState.CHECKMATE_WHITE
+		
+		elif not white_in_check and not white_has_moves:
+			self.board_state = BoardState.STALEMATE_WHITE
+		
+		elif black_in_check and black_has_moves:
+			self.board_state = BoardState.CHECK_BLACK
+
+		elif black_in_check and not black_has_moves:
+			self.board_state = BoardState.CHECKMATE_BLACK
+		
+		elif not black_in_check and not black_has_moves:
+			self.board_state = BoardState.STALEMATE_BLACK
+		
+		else:
+			self.board_state = BoardState.NO_CHECK
+		return
+
+	def is_playable(self):
+		match self.board_state:
+			case BoardState.NO_CHECK | BoardState.CHECK_WHITE | BoardState.CHECK_BLACK:
+				return True
+			case BoardState.CHECKMATE_WHITE | BoardState.CHECKMATE_BLACK | BoardState.STALEMATE_WHITE | BoardState.STALEMATE_BLACK:
+				return False
+			case "_":
+				return False
 
 	def get_piece(self, row, col):
 		if str(self.grid[row][col]) == ".":
@@ -264,6 +313,9 @@ class Board:
 		if type(piece) == Pieces.Pawn:
 			self.update_pawn_double_move_requirement(piece, row)
 		
+		if not testing_for_check:
+			self.update_board_state()
+
 		return captured_piece
 	
 	def undo_move(self, piece, row_start, col_start, row_end, col_end, captured_piece):

@@ -34,3 +34,11 @@ black_in_check.append(Board.HumanReadableMove("f7", "f6"))
 white_in_check_capture = []
 white_in_check_capture.append(Board.HumanReadableMove("e2", "e4"))
 white_in_check_capture.append(Board.HumanReadableMove("d8", "e3"))
+
+white_can_scholars_mate = []
+white_can_scholars_mate.append(Board.HumanReadableMove("e2", "e4"))
+white_can_scholars_mate.append(Board.HumanReadableMove("e7", "e5"))
+white_can_scholars_mate.append(Board.HumanReadableMove("f1", "c4"))
+white_can_scholars_mate.append(Board.HumanReadableMove("b8", "c6"))
+white_can_scholars_mate.append(Board.HumanReadableMove("d1", "h5"))
+white_can_scholars_mate.append(Board.HumanReadableMove("a7", "a6"))

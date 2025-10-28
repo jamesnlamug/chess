@@ -48,33 +48,50 @@ def make_player_move(piece, board):
 	return True
 
 def make_random_ai_move(board, is_white):
+	print(my_board.board_state)
 	valid_moves = board.get_all_valid_moves_of_side(is_white)
+
+	if len(valid_moves) <= 0:
+		return
 
 	move = valid_moves[random.randint(0, len(valid_moves)-1)]
 	board.move(move.piece, move.row, move.col)
 
 	print("ai played " + move.piece.get_full_name() + " to " + Helper.position_to_coordinate(move.row, move.col))
-	pass
+	return
 
 def run_moves(moves):
 	for move in moves:
 		my_board.play_human_readable_move(move)
 
+def run_auto(auto_time):
+	while True:
+		time.sleep(auto_time)
+		make_random_ai_move(my_board, True)
+		#Helper.clear()
+		my_board.print()
+		
+
+		time.sleep(auto_time)
+		make_random_ai_move(my_board, False)
+		#Helper.clear()
+		my_board.print()
+
 #main
 my_board = Board.Board(8, 8)
 
 game_running = True
-player_is_white = False
+player_is_white = True
 
-test_case = testcases.black_castling_left
-#run_moves(test_case)
+test_case = testcases.white_can_scholars_mate
+run_moves(test_case)
 
-'''
-while game_running:
+while my_board.is_playable():
 
 	player_piece = None
 	player_moved = False
 	while not player_moved:
+		print(my_board.board_state)
 		my_board.print()
 		player_piece = get_player_piece(my_board, player_is_white)
 		
@@ -86,16 +103,8 @@ while game_running:
 	
 	#Helper.clear()
 	make_random_ai_move(my_board, not player_is_white)
-'''
 
-auto_time = 0.01
-while True:
-	time.sleep(auto_time)
-	make_random_ai_move(my_board, True)
-	#Helper.clear()
-	my_board.print()
+print("game over.")
+print(my_board.board_state)
 
-	time.sleep(auto_time)
-	make_random_ai_move(my_board, False)
-	#Helper.clear()
-	my_board.print()
+#run_auto(0.01)
