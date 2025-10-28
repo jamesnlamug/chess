@@ -64,6 +64,28 @@ def run_moves(moves):
 	for move in moves:
 		my_board.play_human_readable_move(move)
 
+def run_with_player():
+	while my_board.is_playable():
+
+		player_piece = None
+		player_moved = False
+		while not player_moved:
+			print(my_board.board_state)
+			my_board.print()
+			player_piece = get_player_piece(my_board, player_is_white)
+			
+			if not player_piece == None:
+				#Helper.clear()
+				my_board.print_valid_moves(player_piece)
+
+			player_moved = make_player_move(player_piece, my_board)
+		
+		#Helper.clear()
+		make_random_ai_move(my_board, not player_is_white)
+
+	print("game over.")
+	print(my_board.board_state)
+
 def run_auto(auto_time):
 	while my_board.is_playable():
 		time.sleep(auto_time)
@@ -86,28 +108,7 @@ game_running = True
 player_is_white = True
 
 test_case = testcases.white_can_scholars_mate
-#run_moves(test_case)
+run_moves(test_case)
 
-while my_board.is_playable():
-
-	player_piece = None
-	player_moved = False
-	while not player_moved:
-		print(my_board.board_state)
-		my_board.print()
-		player_piece = get_player_piece(my_board, player_is_white)
-		
-		if not player_piece == None:
-			#Helper.clear()
-			my_board.print_valid_moves(player_piece)
-
-		player_moved = make_player_move(player_piece, my_board)
-	
-	#Helper.clear()
-	make_random_ai_move(my_board, not player_is_white)
-
-print("game over.")
-print(my_board.board_state)
-
-
-#run_auto(0.1)
+#run_with_player()
+run_auto(0.1)
