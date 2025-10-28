@@ -112,12 +112,8 @@ my_board = Board.Board(8, 8)
 game_running = True
 player_is_white = True
 
-test_case = testcases.white_can_scholars_mate
+test_case = testcases.white_castling_right
 run_moves(test_case)
 
-#run_with_player()
-for i in range(80):
-	run_auto_step(True)
-	run_auto_step(False)
-
-run_auto(0.01)
+run_with_player()
+#run_auto(0.01)

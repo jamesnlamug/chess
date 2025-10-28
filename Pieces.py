@@ -126,14 +126,15 @@ class King(Piece):
 	
 	def get_special_moves(self):
 		special_moves = []
+
 		if self.has_moved:
 			return special_moves
 		
 		if not self.left_rook_moved and self.left_castle_open:
-			special_moves.append(PieceMove(0, -2, 1, True, False, "swap-left-rook"))
+			special_moves.append(PieceMove(0, -1, 2, True, False, "swap-left-rook"))
 		if not self.right_rook_moved and self.right_castle_open:
-			special_moves.append(PieceMove(0, 2, 1, True, False, "swap-right-rook"))
-		
+			special_moves.append(PieceMove(0, 1, 2, True, False, "swap-right-rook"))
+
 		return special_moves
 
 class Knight(Piece):

@@ -187,6 +187,10 @@ class Board:
 				if not testing_for_check and not self.move_is_legal(board_move):
 					position = get_position_in_direction(self, position.row, position.col, move.row_offset, move.col_offset)
 					spaces_traveled += 1
+					
+					#cannot move through check
+					if type(piece) == Pieces.King:
+						break
 					continue
 
 				valid_moves.append(board_move)
@@ -272,12 +276,23 @@ class Board:
 		starting_row = 1 if pawn.is_white else self.rows-2
 		pawn.can_double_move = row == starting_row
 
-	def update_space_castling_requirement(self, is_white):
+	def update_castling_space_requirement(self, is_white):
 		king_row = 0 if is_white else self.rows-1
 		king = self.find_king(is_white)
 
-		king.left_castle_open = self.get_piece(king_row, 1) == None and self.get_piece(king_row, 2) == None and self.get_piece(king_row, 3) == None
-		king.right_castle_open = self.get_piece(king_row, 5) == None and self.get_piece(king_row, 6) == None
+		blank_piece = self.create_blank_piece()
+
+		left_piece1_is_blank = str(self.get_piece(king_row, 1)) == str(blank_piece)
+		left_piece2_is_blank = str(self.get_piece(king_row, 2)) == str(blank_piece)
+		left_piece3_is_blank = str(self.get_piece(king_row, 3)) == str(blank_piece)
+
+		right_piece1_is_blank = str(self.get_piece(king_row, 5)) == str(blank_piece)
+		right_piece2_is_blank = str(self.get_piece(king_row, 6)) == str(blank_piece)
+
+		king.left_castle_open = left_piece1_is_blank and left_piece2_is_blank and left_piece3_is_blank
+		king.right_castle_open = right_piece1_is_blank and right_piece2_is_blank
+
+		print("......")
 
 	def update_rook_castling_requirement(self, rook, col):
 		king = self.find_king(rook.is_white)
@@ -309,7 +324,6 @@ class Board:
 
 		self.grid[pawn_pos.row][pawn_pos.col] = promoted_piece
 
-		self.update_space_castling_requirement(promoted_piece.is_white)
 		self.update_board_state(not promoted_piece.is_white)
 
 	def move(self, piece, row, col, testing_for_check=False):
@@ -317,7 +331,7 @@ class Board:
 
 		piece_pos = self.get_position(piece)
 		
-		if type(piece) == Pieces.King and not piece.has_moved:
+		if type(piece) == Pieces.King and not piece.has_moved and not testing_for_check:
 			piece.has_moved = True
 			left_rook = self.get_piece(row, 0)
 			right_rook = self.get_piece(row, self.rows-1)
@@ -334,8 +348,6 @@ class Board:
 		self.grid[row][col] = piece
 		self.grid[piece_pos.row][piece_pos.col] = self.create_blank_piece()
 
-		self.update_space_castling_requirement(piece.is_white)
-
 		if type(piece) == Pieces.Pawn:
 			self.update_pawn_double_move_requirement(piece, row)
 			if not testing_for_check and row == (self.rows-1 if piece.is_white else 0):
@@ -343,6 +355,7 @@ class Board:
 		
 		if not testing_for_check:
 			self.update_board_state(not piece.is_white)
+			self.update_castling_space_requirement(piece.is_white)
 
 		return captured_piece
 	
@@ -376,8 +389,6 @@ class Board:
 
 		self.grid[row_start][col_start] = piece
 		self.grid[row_end][col_end] = captured_piece
-
-		self.update_space_castling_requirement(piece.is_white)
 
 		if type(piece) == Pieces.Pawn:
 			self.update_pawn_double_move_requirement(piece, row_start)

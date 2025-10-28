@@ -42,3 +42,10 @@ white_can_scholars_mate.append(Board.HumanReadableMove("f1", "c4"))
 white_can_scholars_mate.append(Board.HumanReadableMove("b8", "c6"))
 white_can_scholars_mate.append(Board.HumanReadableMove("d1", "h5"))
 white_can_scholars_mate.append(Board.HumanReadableMove("a7", "a6"))
+
+white_castle_through_check = []
+white_castle_through_check.append(Board.HumanReadableMove("f2", "g2"))
+white_castle_through_check.append(Board.HumanReadableMove("h8", "f7"))
+white_castle_through_check.append(Board.HumanReadableMove("g1", "h3"))
+white_castle_through_check.append(Board.HumanReadableMove("e2", "e3"))
+white_castle_through_check.append(Board.HumanReadableMove("f1", "e2"))
