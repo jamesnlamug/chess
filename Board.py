@@ -59,6 +59,9 @@ class Board:
 					row.append(self.create_blank_piece())
 			self.grid.append(row)
 	
+		self.auto_promoted_piece = "q"
+		self.can_auto_promote = False
+
 	def get_tile_color(self, r, c):
 		tile_num = r*9 + c
 		return Back.BLACK if tile_num % 2 == 0 else Back.WHITE
@@ -71,29 +74,29 @@ class Board:
 			string += Fore.RESET + " " + Back.RESET
 			print(string)
 
-	def update_board_state(self):
+	def update_board_state(self, is_white):
 		
 		white_in_check = self.test_for_check(True)
 		black_in_check = self.test_for_check(False)
 		white_has_moves = len(self.get_all_valid_moves_of_side(True)) > 0
 		black_has_moves = len(self.get_all_valid_moves_of_side(False)) > 0
 		
-		if white_in_check and white_has_moves:
+		if is_white and white_in_check and white_has_moves:
 			self.board_state = BoardState.CHECK_WHITE
 
-		elif white_in_check and not white_has_moves:
+		elif is_white and white_in_check and not white_has_moves:
 			self.board_state = BoardState.CHECKMATE_WHITE
 		
-		elif not white_in_check and not white_has_moves:
+		elif is_white and not white_in_check and not white_has_moves:
 			self.board_state = BoardState.STALEMATE_WHITE
 		
-		elif black_in_check and black_has_moves:
+		elif not is_white and black_in_check and black_has_moves:
 			self.board_state = BoardState.CHECK_BLACK
 
-		elif black_in_check and not black_has_moves:
+		elif not is_white and black_in_check and not black_has_moves:
 			self.board_state = BoardState.CHECKMATE_BLACK
 		
-		elif not black_in_check and not black_has_moves:
+		elif not is_white and not black_in_check and not black_has_moves:
 			self.board_state = BoardState.STALEMATE_BLACK
 		
 		else:
@@ -284,6 +287,31 @@ class Board:
 		elif col == self.cols-1:
 			king.right_rook_moved = True
 
+	def promote(self, pawn):
+		promotion_pieces = ["q", "r", "b", "n"]
+		promoted_piece = None
+		selected_promotion = self.auto_promoted_piece if self.can_auto_promote else ""
+
+		while not selected_promotion in promotion_pieces:
+			selected_promotion = input("promote your pawn(q/r/b/n): ")
+		
+		match selected_promotion:
+			case "q":
+				promoted_piece = Pieces.Queen(pawn.is_white)
+			case "r":
+				promoted_piece = Pieces.Rook(pawn.is_white)
+			case "b":
+				promoted_piece = Pieces.Bishop(pawn.is_white)
+			case "n":
+				promoted_piece = Pieces.Knight(pawn.is_white)
+
+		pawn_pos = self.get_position(pawn)
+
+		self.grid[pawn_pos.row][pawn_pos.col] = promoted_piece
+
+		self.update_space_castling_requirement(promoted_piece.is_white)
+		self.update_board_state(not promoted_piece.is_white)
+
 	def move(self, piece, row, col, testing_for_check=False):
 		#print("move: " + str(piece) + " to " + Helper.position_to_coordinate(row, col))
 
@@ -310,9 +338,11 @@ class Board:
 
 		if type(piece) == Pieces.Pawn:
 			self.update_pawn_double_move_requirement(piece, row)
+			if not testing_for_check and row == (self.rows-1 if piece.is_white else 0):
+				self.promote(piece)
 		
 		if not testing_for_check:
-			self.update_board_state()
+			self.update_board_state(not piece.is_white)
 
 		return captured_piece
 	

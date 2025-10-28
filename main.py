@@ -49,6 +49,7 @@ def make_player_move(piece, board):
 
 def make_random_ai_move(board, is_white):
 	print(my_board.board_state)
+	my_board.can_auto_promote = True
 	valid_moves = board.get_all_valid_moves_of_side(is_white)
 
 	if len(valid_moves) <= 0:
@@ -69,6 +70,9 @@ def run_with_player():
 
 		player_piece = None
 		player_moved = False
+		
+		my_board.can_auto_promote = False
+
 		while not player_moved:
 			print(my_board.board_state)
 			my_board.print()
@@ -86,18 +90,19 @@ def run_with_player():
 	print("game over.")
 	print(my_board.board_state)
 
+def run_auto_step(is_white):
+	make_random_ai_move(my_board, is_white)
+	Helper.clear()
+	my_board.print()
+
 def run_auto(auto_time):
 	while my_board.is_playable():
 		time.sleep(auto_time)
-		make_random_ai_move(my_board, True)
-		Helper.clear()
-		my_board.print()
-		
+		run_auto_step(True)
 
 		time.sleep(auto_time)
-		make_random_ai_move(my_board, False)
-		Helper.clear()
-		my_board.print()
+		run_auto_step(False)
+
 	print("game over.")
 	print(my_board.board_state)
 
@@ -111,4 +116,8 @@ test_case = testcases.white_can_scholars_mate
 run_moves(test_case)
 
 #run_with_player()
-run_auto(0.1)
+for i in range(80):
+	run_auto_step(True)
+	run_auto_step(False)
+
+run_auto(0.01)
