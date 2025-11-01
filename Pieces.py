@@ -43,10 +43,22 @@ class PieceMove:
 		self.is_capture = is_capture
 		self.special_command = special_command
 
+	def __str__(self):
+		my_str = "PieceMove: "
+		my_str += "r: " + str(self.row_offset)
+		my_str += ", c: " + str(self.col_offset)
+		my_str += ", max: " + str(self.max_spaces)
+		my_str += ", is_move: " + str(self.is_move)
+		my_str += ", is_cap: " + str(self.is_capture)
+		my_str += ", is_special:" + str(self.special_command)
+		return my_str
+
 class Pawn(Piece):
 	def __init__(self, is_white):
 		Piece.__init__(self, is_white, "p")
 		self.can_double_move = True
+		self.can_capture_en_passant_left = False
+		self.can_capture_en_passant_right = False
 
 		#forward
 		self.moves.append(PieceMove(self.get_direction(), 0, 1, True, False))
@@ -62,6 +74,12 @@ class Pawn(Piece):
 		special_moves = []
 		if self.can_double_move:
 			special_moves.append(PieceMove(self.get_direction(), 0, 2, True, False))
+		
+		#fake capture with en passant
+		if self.can_capture_en_passant_left:
+			special_moves.append(PieceMove(self.get_direction(), -1, 1, True, False))
+		if self.can_capture_en_passant_right:
+			special_moves.append(PieceMove(self.get_direction(), 1, 1, True, False))
 		return special_moves
 
 class Queen(Piece):

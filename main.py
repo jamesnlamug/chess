@@ -3,6 +3,7 @@ import random
 import Helper
 import Board
 import testcases
+import Pieces
 
 def get_player_piece(board, is_white):
 	player_input = input("select a piece(a1-h8): ")
@@ -74,6 +75,7 @@ def run_with_player():
 		my_board.can_auto_promote = False
 
 		while not player_moved:
+
 			print(my_board.board_state)
 			my_board.print()
 			player_piece = get_player_piece(my_board, player_is_white)
@@ -112,7 +114,7 @@ my_board = Board.Board(8, 8)
 game_running = True
 player_is_white = True
 
-test_case = testcases.white_castling_right
+test_case = testcases.white_en_passant2
 run_moves(test_case)
 
 run_with_player()

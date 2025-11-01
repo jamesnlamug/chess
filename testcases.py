@@ -49,3 +49,11 @@ white_castle_through_check.append(Board.HumanReadableMove("h8", "f7"))
 white_castle_through_check.append(Board.HumanReadableMove("g1", "h3"))
 white_castle_through_check.append(Board.HumanReadableMove("e2", "e3"))
 white_castle_through_check.append(Board.HumanReadableMove("f1", "e2"))
+
+white_en_passant = []
+white_en_passant.append(Board.HumanReadableMove("e2", "e5"))
+white_en_passant.append(Board.HumanReadableMove("f7", "f5"))
+
+white_en_passant2 = []
+white_en_passant2.append(Board.HumanReadableMove("g2", "g5"))
+white_en_passant2.append(Board.HumanReadableMove("h7", "h5"))
