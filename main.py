@@ -3,7 +3,6 @@ import random
 import Helper
 import Board
 import testcases
-import Pieces
 
 def get_player_piece(board, is_white):
 	player_input = input("select a piece(a1-h8): ")
@@ -49,7 +48,6 @@ def make_player_move(piece, board):
 	return True
 
 def make_random_ai_move(board, is_white):
-	print(my_board.board_state)
 	my_board.can_auto_promote = True
 	valid_moves = board.get_all_valid_moves_of_side(is_white)
 
@@ -76,7 +74,6 @@ def run_with_player():
 
 		while not player_moved:
 
-			print(my_board.board_state)
 			my_board.print()
 			player_piece = get_player_piece(my_board, player_is_white)
 			
@@ -89,8 +86,7 @@ def run_with_player():
 		#Helper.clear()
 		make_random_ai_move(my_board, not player_is_white)
 
-	print("game over.")
-	print(my_board.board_state)
+	run_game_over()
 
 def run_auto_step(is_white):
 	make_random_ai_move(my_board, is_white)
@@ -105,8 +101,22 @@ def run_auto(auto_time):
 		time.sleep(auto_time)
 		run_auto_step(False)
 
-	print("game over.")
-	print(my_board.board_state)
+	run_game_over()
+
+def run_game_over():
+	print("----------")
+	print("Game over.")
+	match my_board.board_state:
+		case Board.BoardState.WHITE_IN_CHECKMATE:
+			print("Black wins by checkmate!")
+		case Board.BoardState.BLACK_IN_CHECKMATE:
+			print("White wins by checkmate!")
+		case Board.BoardState.WHITE_IN_STALEMATE:
+			print("It's a draw! White has no legal moves.")
+		case Board.BoardState.BLACK_IN_STALEMATE:
+			print("It's a draw! Black has no legal moves.")
+		case Board.BoardState.DRAW_INSUFFICIENT:
+			print("It's a draw! There is insufficient material to force checkmate.")
 
 #main
 my_board = Board.Board(8, 8)
@@ -117,5 +127,5 @@ player_is_white = True
 test_case = testcases.white_en_passant2
 run_moves(test_case)
 
-run_with_player()
-#run_auto(0.01)
+#run_with_player()
+run_auto(0.01)
