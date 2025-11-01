@@ -12,12 +12,13 @@ def get_position_in_direction(board, row, col, row_offset, col_offset):
 
 class BoardState(Enum):
 	NO_CHECK = 0
-	CHECK_WHITE = 1
-	CHECK_BLACK = 2
-	CHECKMATE_WHITE = 3
-	CHECKMATE_BLACK = 4
-	STALEMATE_WHITE = 5
-	STALEMATE_BLACK = 6
+	WHITE_IN_CHECK = 1
+	BLACK_IN_CHECK = 2
+	WHITE_IN_CHECKMATE = 3
+	BLACK_IN_CHECKMATE = 4
+	WHITE_IN_STALEMATE = 5
+	BLACK_IN_STALEMATE = 6
+	DRAW_INSUFFICIENT = 7
 
 class Board:
 	def __init__(self, rows, cols):
@@ -66,6 +67,11 @@ class Board:
 		tile_num = r*9 + c
 		return Back.BLACK if tile_num % 2 == 0 else Back.WHITE
 
+	def get_bishop_is_light_squared(self, bishop):
+		bishop_pos = self.get_position(bishop)
+		tile_num = bishop_pos.row*9 + bishop_pos.col
+		return tile_num % 2 == 1
+
 	def print(self):
 		for r in range(self.rows-1, -1, -1):
 			string = Fore.RESET + Back.RESET
@@ -82,35 +88,88 @@ class Board:
 		black_has_moves = len(self.get_all_valid_moves_of_side(False)) > 0
 		
 		if is_white and white_in_check and white_has_moves:
-			self.board_state = BoardState.CHECK_WHITE
+			self.board_state = BoardState.WHITE_IN_CHECK
 
 		elif is_white and white_in_check and not white_has_moves:
-			self.board_state = BoardState.CHECKMATE_WHITE
+			self.board_state = BoardState.WHITE_IN_CHECKMATE
 		
 		elif is_white and not white_in_check and not white_has_moves:
-			self.board_state = BoardState.STALEMATE_WHITE
+			self.board_state = BoardState.WHITE_IN_STALEMATE
 		
 		elif not is_white and black_in_check and black_has_moves:
-			self.board_state = BoardState.CHECK_BLACK
+			self.board_state = BoardState.BLACK_IN_CHECK
 
 		elif not is_white and black_in_check and not black_has_moves:
-			self.board_state = BoardState.CHECKMATE_BLACK
+			self.board_state = BoardState.BLACK_IN_CHECKMATE
 		
 		elif not is_white and not black_in_check and not black_has_moves:
-			self.board_state = BoardState.STALEMATE_BLACK
+			self.board_state = BoardState.BLACK_IN_STALEMATE
 		
+		elif self.is_drawn():
+			self.board_state = BoardState.DRAW_INSUFFICIENT
+
 		else:
 			self.board_state = BoardState.NO_CHECK
 		return
 
 	def is_playable(self):
 		match self.board_state:
-			case BoardState.NO_CHECK | BoardState.CHECK_WHITE | BoardState.CHECK_BLACK:
+			case BoardState.NO_CHECK | BoardState.WHITE_IN_CHECK | BoardState.BLACK_IN_CHECK:
 				return True
-			case BoardState.CHECKMATE_WHITE | BoardState.CHECKMATE_BLACK | BoardState.STALEMATE_WHITE | BoardState.STALEMATE_BLACK:
+			case BoardState.WHITE_IN_CHECKMATE | BoardState.BLACK_IN_CHECKMATE | BoardState.WHITE_IN_STALEMATE | BoardState.BLACK_IN_STALEMATE | BoardState.DRAW_INSUFFICIENT:
 				return False
 			case "_":
 				return False
+
+	def is_drawn(self):
+		all_pieces = self.get_all_pieces_of_side(True) + self.get_all_pieces_of_side(False)
+
+		white_light_squared_bishops = 0
+		white_dark_squared_bishops = 0
+		white_knights = 0
+		black_light_squared_bishops = 0
+		black_dark_squared_bishops = 0
+		black_knights = 0
+
+		for piece in all_pieces:
+			if type(piece) == Pieces.Queen:
+				return False
+			
+			if type(piece) == Pieces.Rook:
+				return False
+			
+			if type(piece) == Pieces.Pawn:
+				return False
+			
+			if type(piece) == Pieces.Knight:
+				if piece.is_white:
+					white_knights += 1
+				else:
+					black_knights += 1
+				continue
+
+			if type(piece) == Pieces.Bishop:
+				if piece.is_white:
+					if self.get_bishop_is_light_squared(piece):
+						white_light_squared_bishops += 1
+					else:
+						white_dark_squared_bishops += 1
+				else:
+					if self.get_bishop_is_light_squared(piece):
+						black_light_squared_bishops += 1
+					else:
+						black_dark_squared_bishops += 1
+				continue
+
+			#various combinations of pieces sufficient to checkmate
+			if white_knights > 2 or black_knights > 2:
+				return False
+			if (white_light_squared_bishops > 0 and white_dark_squared_bishops > 0) or (black_light_squared_bishops > 0 and black_dark_squared_bishops > 0):
+				return False
+			if (white_light_squared_bishops + white_dark_squared_bishops > 0 and white_knights > 0) or (black_light_squared_bishops + black_dark_squared_bishops > 0 and black_knights > 0):
+				return False
+
+		return True
 
 	def get_piece(self, row, col):
 		if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
